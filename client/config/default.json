@@ -1,0 +1,4 @@
+{
+	"server": "http://localhost:1337",
+	"imageFolder": "images"
+}
