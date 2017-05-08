@@ -1,4 +1,4 @@
 {
 	"port": 1337,
-	"imageFolder": "images"
+	"imageDir": "images"
 }

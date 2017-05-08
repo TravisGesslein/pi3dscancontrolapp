@@ -4,7 +4,7 @@ var fs = require('fs');
 
 //read server address from config
 var serverUrl = config.get('server');
-var imageFolderName = config.get('imageFolder');
+var imageFolderName = config.get('imageDir');
 
 var io = require('socket.io-client')(serverUrl); //options are ommited, server tries connection and reconnection in intervals automatically
 
@@ -15,12 +15,13 @@ io.on("connect", function (socket)
 {
 });
 console.log(process.cwd());
+
 //server tells me to take image!
-io.on(common.EVENT_TYPES.TAKE_IMAGE, function () {
+io.on(common.EVENT_TYPES.TAKE_IMAGE, function (data) {
     takeImage(function (imageFilename) {
-        var data = fs.readFileSync(imageFilename);
-        var str = data.toString('base64');
-        io.emit(common.EVENT_TYPES.SEND_IMAGE,str );
+        var image = fs.readFileSync(imageFilename);
+        var str = image.toString('base64');
+        io.emit(common.EVENT_TYPES.SEND_IMAGE, { image: str, setIndex: data.setIndex } ); //server sends us a set index so it knows which set of images the currently set image belongs to. we send it back.
     });
 });
 
