@@ -52,6 +52,10 @@ function handleNewClient(socket)
         var image = Buffer.from(data.image, 'base64');
         processReceivedImage(image, imageSet, client);
     });
+
+    socket.on(common.EVENT_TYPES.ERROR, function (data) {
+        console.log("client sent exception: " + data.toString());
+    });
 }
 
 function removeClient(socket)
@@ -74,6 +78,8 @@ function processReceivedImage(image, imageSet, client)
     imageSet.imagePaths.push(path);
     imageSet.imagesLeft--;
     fs.writeFile(path, image);
+
+    console.log("Received image. " + imageSet.imagesLeft + " left...");
 }
 
 //takes images from all clients and stores them in the images folder
