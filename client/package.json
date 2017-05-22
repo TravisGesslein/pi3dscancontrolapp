@@ -9,8 +9,10 @@
   "license": "ISC",
   "dependencies": {
     "config": "^1.26.1",
-    "socket.io": "^1.7.3",
-    "raspicam": "^0.2.13"
+    "node-glfw-bindings": "^1.0.3",
+    "node-gyp": "^3.6.1",
+    "raspicam": "^0.2.13",
+    "socket.io": "^1.7.3"
   },
   "devDependencies": {},
   "keywords": [],
