@@ -1,4 +1,5 @@
 {
 	"server": "http://localhost:1337",
-	"imageDir": "images"
+	"imageDir": "images",
+	"isProjectorClient" : true
 }
