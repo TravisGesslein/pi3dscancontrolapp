@@ -23,10 +23,12 @@
     <Folder Include="typings\globals\" />
     <Folder Include="typings\globals\node\" />
     <Folder Include="typings\globals\socket.io\" />
+    <Folder Include="typings\globals\three\" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\socket.io\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\three\index.d.ts" />
     <TypeScriptCompile Include="typings\index.d.ts" />
   </ItemGroup>
   <ItemGroup>
