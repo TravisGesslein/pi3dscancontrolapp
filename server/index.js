@@ -64,6 +64,7 @@ function handleNewClient(socket)
     //client sends taken image
     socket.on(common.EVENT_TYPES.SEND_IMAGE, function (data)
     {
+		console.log("received SEND_IMAGE event");
         var imageSet = serverData.imageSets[data.setIndex];
         var image = Buffer.from(data.image, 'base64');
         processReceivedImage(image, imageSet, client);
@@ -92,7 +93,7 @@ function processReceivedImage(image, imageSet, client)
     client.receivedImages++;
     fs.writeFile(path, image);
 
-    console.log("Received image. " + imageSet.imagesLeft + " left...");
+    console.log("Received image for image set " + imageSet.roundIndex + ". " + imageSet.imagesLeft + " left...");
 }
 
 //takes images from all clients and stores them in the images folder
@@ -103,22 +104,24 @@ function takeImages(directoryNamePrefix, showBeamerPattern)
     var round = { //one 'round' of taken images
         imagesLeft: clients.length, //number of images that have yet to be received from clients
         imagePaths: [],
+		roundIndex: -1,
         time: new Date(), //server time when the images were taken
         directoryName: null //computed later
     };
 
+	
     round.directoryName = directoryNamePrefix + round.time.getDate() + "-" + (round.time.getMonth()+1) + "-" + round.time.getFullYear() + " " + round.time.getHours() + " " + round.time.getMinutes() + " " + round.time.getSeconds() + " " + round.time.getMilliseconds();
 
     //start the image taking process after folder is created (via callback)
     fs.mkdir(imageDirectoryName + "/" + round.directoryName, function ()
     {
         serverData.imageSets.push(round);
-
+		round.roundIndex = serverData.imageSets.length-1;
         //we send the TAKE_IMAGE event to clients, and the setIndex which the clients will also send back once they send back images
         //this way we know the mapping between sent client images and an image set. this is important because it's possible for servers to wait on images from different sets
         //(for example, if two sets of images are taken immediately one after the other, but some time is needed for network transfer)
         var eventData = {
-            setIndex: serverData.imageSets.length - 1, //index of the image set that the taken image corresponds to
+            setIndex: round.roundIndex, //index of the image set that the taken image corresponds to
         }
 
         for (var i = 0; i < serverData.projectorClients.length; ++i) {
@@ -141,6 +144,7 @@ function takeImages(directoryNamePrefix, showBeamerPattern)
 
 console.log("Press T to tell all connected PI-cams to take images and store them on the server.");
 console.log("Press E to shut down server.");
+console.log("Press U to update console (doesn't show new messages sometimes)");
 
 process.stdin.on("keypress", function (char, key) {
     if (key) {
@@ -154,7 +158,9 @@ process.stdin.on("keypress", function (char, key) {
         }
         else if (key.name === 'e') {
             process.exit();
-        }
+        }else if (key.name === 'u') {
+			
+		}
     }
 });
 
