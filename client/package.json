@@ -11,10 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "config": "^1.26.1",
-   
-
-
-    "raspicam": "^0.2.13",
+    "raspicam": "git://github.com/troyth/node-raspicam.git",
     "socket.io": "^1.7.3"
   },
   "devDependencies": {},

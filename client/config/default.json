@@ -1,5 +1,4 @@
 {
-	"server": "http://192.168.2.103:1337",
+	"server": "http://192.168.1.5:1337",
 	"imageDir": "images",
-	"isProjectorClient" : true
 }

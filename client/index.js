@@ -2,6 +2,7 @@
 var common = require("../common/common.js"); //code that is common to server and client
 var fs = require('fs');
 var raspicam = require('raspicam');
+var exec = require("child_process").exec;
 
 //read server address from config
 var serverUrl = config.get('server');
@@ -16,12 +17,14 @@ var clientData = {
 
 io.on("connect", function (socket,a,b)
 {
-
+	console.log("Connected to server!");
 });
+
+
 
 //server tells me to take image!
 io.on(common.EVENT_TYPES.TAKE_IMAGE, function (data) {
-    console.log("taking image");
+    console.log("Received server command: take image");
     takeImage(function (imageFilename) {
 		console.log("preparing SEND_IMAGE event");
         var image = fs.readFileSync(imageFilename);
@@ -29,13 +32,22 @@ io.on(common.EVENT_TYPES.TAKE_IMAGE, function (data) {
         io.emit(common.EVENT_TYPES.SEND_IMAGE, { image: str, setIndex: data.setIndex }); //server sends us a set index so it knows which set of images the currently set image belongs to. we send it back.
 		console.log("sending response to server for image set " + data.setIndex);
 	});
+
+	
 });
 
+
+//server tells me to update git repository
+io.on(common.EVENT_TYPES.GIT_PULL, function (data) {
+	var cmd = "git pull origin master";
+	exec(cmd);
+	});
 
 //sends an error string to the server
 function serverError(string) {
     io.emit(common.EVENT_TYPES.ERROR, { message: string });
 }
+
 
 //takes an image using the pi cam and calls the given callback on success
 //callback arguments are (imagefilename)
@@ -46,7 +58,8 @@ function takeImage(callback) {
         mode: "photo",
         output: imageFolderName + "/%d.jpg",
 		timeout: 1,
-		nopreview: true
+		nopreview: true,
+		ex: "fireworks"
     });
 	
 	var readEvent = function(thisArg, error, filename) 
@@ -57,9 +70,22 @@ function takeImage(callback) {
 				callback(filenameStr);
 				camera.removeListener("read",readEvent);
 				console.log("removed listener. total read listeners: " + camera.listeners("read").length);
+				camera.stop();
 			}   
- }
+	}
+	
+	var startEvent = function()
+	{
+		console.log("start event triggered!");
+	}
+	
+	var endEvent = function()
+	{
+		console.log("end event triggered!");
+	}
+	
     camera.on("read", readEvent );
-
+	camera.on("start",startEvent);
+	camera.on("exited",endEvent);
     camera.start();
 }

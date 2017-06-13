@@ -4,4 +4,5 @@ module.exports.EVENT_TYPES = {
     ERROR: 2,
     BEAMER_SHOW_PATTERN: 3,
     BEAMER_HIDE_PATTERN: 4,
+	GIT_PULL: 5
 };

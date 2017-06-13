@@ -28,6 +28,7 @@ io.on("error", function (error) {
 
 io.on('connection', function (socket)
 {
+	
     var client = handleNewClient(socket);
 
     socket.on('disconnect', function () {
@@ -36,8 +37,21 @@ io.on('connection', function (socket)
     });
 });
 
+function socketAlreadyConnected(socket)
+{
+	
+	for(var i=0;i<serverData.clients.length;++i)
+	{
+		if(serverData.clients[i].socket === socket)
+			return true;
+	}
+	
+	return false;
+}
+
 function handleNewClient(socket)
 {
+	
     var type = socket.handshake.query.type; //client type, will send something like 'beamerClient' or 'cameraClient'
     var client = {
         socket: socket,
@@ -110,7 +124,7 @@ function takeImages(directoryNamePrefix, showBeamerPattern)
     };
 
 	
-    round.directoryName = directoryNamePrefix + round.time.getDate() + "-" + (round.time.getMonth()+1) + "-" + round.time.getFullYear() + " " + round.time.getHours() + " " + round.time.getMinutes() + " " + round.time.getSeconds() + " " + round.time.getMilliseconds();
+    round.directoryName =  round.time.getDate() + "-" + (round.time.getMonth()+1) + "-" + round.time.getFullYear() + " " + round.time.getHours() + " " + round.time.getMinutes() + " " + round.time.getSeconds() + " " + round.time.getMilliseconds() + directoryNamePrefix;
 
     //start the image taking process after folder is created (via callback)
     fs.mkdir(imageDirectoryName + "/" + round.directoryName, function ()
@@ -154,7 +168,7 @@ process.stdin.on("keypress", function (char, key) {
             setTimeout(function ()
             {
                 takeImages("patterned_", true);
-            }, 10);
+            }, 1000);
         }
         else if (key.name === 'e') {
             process.exit();
