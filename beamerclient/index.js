@@ -1,6 +1,7 @@
 ﻿var config = require('config');
 var common = require("common"); //code that is common to server and client
 var fs = require('fs');
+var nw = require("nw.gui");
 
 //read server address from config
 var serverUrl = config.get('server');
@@ -52,31 +53,26 @@ function hidePattern()
     }
 }
 
-nw.Screen.Init();
+var win = nw.Window.get();
 
-var screens = nw.Screen.screens;
-//if only 1 screen is connected, we show the window on that one. otherwise, we show it on the last available, which assumes that the first connected screen 
-
-
-
-nw.Window.open("beamercontent.html", function (win) {
+win.on("loaded", function () {
     currentWindow = win;
     console.log("asdf");
-    win.window.onload = function () {
-        console.log("loading");
-        mainCanvas = currentWindow.window.document.getElementById("mainCanvas");
-        mainCanvas.width = currentWindow.window.screen.width;
-        mainCanvas.height = currentWindow.window.screen.height;
-        context = mainCanvas.getContext("2d");
+   
+	console.log("loading");
+	mainCanvas = currentWindow.window.document.getElementById("mainCanvas");
+	mainCanvas.width = currentWindow.window.screen.width;
+	mainCanvas.height = currentWindow.window.screen.height;
+	context = mainCanvas.getContext("2d");
 
-        patternImage = currentWindow.window.document.getElementById("pattern");
+	patternImage = currentWindow.window.document.getElementById("pattern");
 
-        console.log("width and height:" + mainCanvas.width + " " + mainCanvas.height);
+	console.log("width and height:" + mainCanvas.width + " " + mainCanvas.height);
 
-        currentWindow.enterFullscreen();
+	currentWindow.enterFullscreen();
 
-        hidePattern();
-    };
+	hidePattern();
+    
 
     
 });
