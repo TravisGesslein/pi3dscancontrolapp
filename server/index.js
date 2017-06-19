@@ -1,5 +1,5 @@
 var config = require('config');
-var common = require("../common/common.js")
+var common = require("common")
 var keypress = require("keypress");
 var fs = require("fs");
 

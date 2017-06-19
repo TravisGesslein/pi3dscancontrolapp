@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-	"start": "nw --enable-logging=stderr"
+    "start": "nw --enable-logging=stderr"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "common": "file:..\\common",
     "config": "^1.26.1",
     "nw": "^0.22.3",
     "raspicam": "^0.2.13",
