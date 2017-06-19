@@ -4,8 +4,7 @@ var fs = require('fs');
 var nw = require("nw.gui");
 
 //read server address from config
-var serverUrl = config.get('server');
-var imageFolderName = config.get('imageDir');
+var serverUrl = "http://192.168.1.5:1337";
 
 
 var io = require('socket.io-client')(serverUrl,{
@@ -61,15 +60,16 @@ win.on("loaded", function () {
    
 	console.log("loading");
 	mainCanvas = currentWindow.window.document.getElementById("mainCanvas");
+	currentWindow.enterFullscreen();
 	mainCanvas.width = currentWindow.window.screen.width;
-	mainCanvas.height = currentWindow.window.screen.height;
+	mainCanvas.height =currentWindow.window.screen.height;
 	context = mainCanvas.getContext("2d");
 
 	patternImage = currentWindow.window.document.getElementById("pattern");
 
 	console.log("width and height:" + mainCanvas.width + " " + mainCanvas.height);
 
-	currentWindow.enterFullscreen();
+	
 
 	hidePattern();
     
