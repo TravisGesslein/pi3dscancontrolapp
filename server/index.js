@@ -7,6 +7,7 @@ keypress(process.stdin);
 
 var serverPort = config.get('port');
 var imageDirectoryName = config.get('imageDir');
+var photoOptions = config.get("photoOptions");
 
 //make sure the image directory actually exists
 if (!fs.existsSync(imageDirectoryName)) {
@@ -134,8 +135,9 @@ function takeImages(directoryNamePrefix, showBeamerPattern)
         //we send the TAKE_IMAGE event to clients, and the setIndex which the clients will also send back once they send back images
         //this way we know the mapping between sent client images and an image set. this is important because it's possible for servers to wait on images from different sets
         //(for example, if two sets of images are taken immediately one after the other, but some time is needed for network transfer)
-        var eventData = {
+        var cameraClientEventData = {
             setIndex: round.roundIndex, //index of the image set that the taken image corresponds to
+			photoOptions: photoOptions
         }
 
         for (var i = 0; i < serverData.projectorClients.length; ++i) {
@@ -148,7 +150,7 @@ function takeImages(directoryNamePrefix, showBeamerPattern)
         }
 
         for (var i = 0; i < serverData.cameraClients.length; ++i) {
-            serverData.cameraClients[i].socket.emit(common.EVENT_TYPES.TAKE_IMAGE, eventData);
+            serverData.cameraClients[i].socket.emit(common.EVENT_TYPES.TAKE_IMAGE, cameraClientEventData);
             serverData.cameraClients[i].requestedImages++;
         }
     });

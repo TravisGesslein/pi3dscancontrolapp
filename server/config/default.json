@@ -1,4 +1,8 @@
 {
 	"port": 1337,
-	"imageDir": "images"
+	"imageDir": "images",
+	"photoOptions": {
+		"width": 1920,
+		"height": 1080
+	}
 }

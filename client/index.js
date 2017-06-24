@@ -25,7 +25,7 @@ io.on("connect", function (socket,a,b)
 //server tells me to take image!
 io.on(common.EVENT_TYPES.TAKE_IMAGE, function (data) {
     console.log("Received server command: take image");
-    takeImage(function (imageFilename) {
+    takeImage(data, function (imageFilename) {
 		console.log("preparing SEND_IMAGE event");
         var image = fs.readFileSync(imageFilename);
         var str = image.toString('base64');
@@ -51,15 +51,18 @@ function serverError(string) {
 
 //takes an image using the pi cam and calls the given callback on success
 //callback arguments are (imagefilename)
-function takeImage(callback) {
+function takeImage(data, callback) {
     /*callback(imageFolderName + "/test.jpg");
 	return; */
+	console.log("Debug: " + data.photoOptions.width + " " + data.photoOptions.height);
     var camera = new raspicam({
         mode: "photo",
         output: imageFolderName + "/%d.jpg",
 		timeout: 1,
 		nopreview: true,
-		ex: "fireworks"
+		ex: "fireworks",
+		width: data.photoOptions.width || 640,
+		height: data.photoOptions.height || 480
     });
 	
 	var readEvent = function(thisArg, error, filename) 
