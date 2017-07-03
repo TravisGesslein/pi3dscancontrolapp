@@ -20,6 +20,7 @@ var serverData = {
     clients: [], //all connected clients
     cameraClients: [], //all connected clients that operate a camera
     projectorClients: [], //all connected clients that operate a projector
+	ledClients: [], //all connected clients that operate LED stripes
     imageSets: [], //stores information about each set of taken images (every time the user wants to take images from all cameras = '1 set').
 };
 
@@ -69,6 +70,9 @@ function handleNewClient(socket)
             serverData.cameraClients.push(client);
             console.log("Camera client connected! (total: " + serverData.cameraClients.length + ")");
             break;
+		case "ledClient":
+			serverData.ledClients.push(client);
+			console.log("LED client connected! (total: " + serverData.ledClients.length + ")");
     }
 
     serverData.clients.push(client);
@@ -156,11 +160,47 @@ function takeImages(directoryNamePrefix, showBeamerPattern)
     });
 }
 
+function ledAOn()
+{
+	for(var i=0;i<serverData.ledClients.length;++i)
+	{
+		serverData.ledClients[i].socket.emit(common.EVENT_TYPES.LED_A_ON, null);
+	}
+}
+
+function ledAOff()
+{
+	for(var i=0;i<serverData.ledClients.length;++i)
+	{
+		serverData.ledClients[i].socket.emit(common.EVENT_TYPES.LED_A_OFF, null);
+	}
+}
+
+function ledBOn()
+{
+	for(var i=0;i<serverData.ledClients.length;++i)
+	{
+		serverData.ledClients[i].socket.emit(common.EVENT_TYPES.LED_B_ON, null);
+	}
+}
+
+function ledBOff()
+{
+	for(var i=0;i<serverData.ledClients.length;++i)
+	{
+		serverData.ledClients[i].socket.emit(common.EVENT_TYPES.LED_B_OFF, null);
+	}
+}
 //startup
 
 console.log("Press T to tell all connected PI-cams to take images and store them on the server.");
 console.log("Press E to shut down server.");
 console.log("Press U to update console (doesn't show new messages sometimes)");
+console.log("Press A to turn LED group A on");
+console.log("Press S to turn LED group A off");
+console.log("Press B to turn LED group B on");
+console.log("Press N to turn LED group B off");
+
 
 process.stdin.on("keypress", function (char, key) {
     if (key) {
@@ -176,7 +216,20 @@ process.stdin.on("keypress", function (char, key) {
             process.exit();
         }else if (key.name === 'u') {
 			
+		} else if(key.name === 'a')
+		{
+			ledAOn();
+		} else if(key.name === 's')
+		{
+			ledAOff();
+		}else if(key.name === 'b')
+		{
+			ledBOn();
+		} else if(key.name === 'n')
+		{
+			ledBOff();
 		}
+		
     }
 });
 

@@ -1,0 +1,3 @@
+[submodule "rpi-gpio"]
+	path = rpi-gpio
+	url = ./rpi-gpio

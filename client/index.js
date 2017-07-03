@@ -1,12 +1,11 @@
-﻿var config = require('config');
-var common = require("common"); //code that is common to server and client
+﻿var common = require("common"); //code that is common to server and client
 var fs = require('fs');
 var raspicam = require('raspicam');
 var exec = require("child_process").exec;
 
 //read server address from config
-var serverUrl = config.get('server');
-var imageFolderName = config.get('imageDir');
+var serverUrl = "http://192.168.1.5:1337";
+var imageFolderName = "images";
 
 var io = require('socket.io-client')(serverUrl, {
     query: "type=cameraClient"
@@ -35,7 +34,6 @@ io.on(common.EVENT_TYPES.TAKE_IMAGE, function (data) {
 
 	
 });
-
 
 //server tells me to update git repository
 io.on(common.EVENT_TYPES.GIT_PULL, function (data) {
