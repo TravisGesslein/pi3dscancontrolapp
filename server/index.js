@@ -22,6 +22,7 @@ var serverData = {
     projectorClients: [], //all connected clients that operate a projector
 	ledClients: [], //all connected clients that operate LED stripes
     imageSets: [], //stores information about each set of taken images (every time the user wants to take images from all cameras = '1 set').
+	addressConnects: {}
 };
 
 io.on("error", function (error) {
@@ -51,6 +52,25 @@ function socketAlreadyConnected(socket)
 	return false;
 }
 
+function printRealClients()
+{
+	var count = 0;
+	for(var address in serverData.addressConnects)
+	{
+		if(serverData.addressConnects.hasOwnProperty(address))
+		{
+			if(serverData.addressConnects[address] > 0)
+			{
+				count++;
+			}
+		}
+	}
+	
+	console.log("real clients connected: " + count);
+	
+}
+
+
 function handleNewClient(socket)
 {
 	
@@ -61,6 +81,8 @@ function handleNewClient(socket)
         requestedImages: 0,
         receivedImages: 0
     };
+	
+	console.log("Incoming client connection: " + socket.handshake.address );
     switch (type) {
         case "projectorClient":
             serverData.projectorClients.push(client);
@@ -92,12 +114,26 @@ function handleNewClient(socket)
     socket.on(common.EVENT_TYPES.ERROR, function (data) {
         console.log("client sent exception: " + data.toString());
     });
+	
+	if(!serverData.addressConnects[client.socket.handshake.address])
+	{
+		serverData.addressConnects[client.socket.handshake.address] = 0;
+	}
+	
+	serverData.addressConnects[client.socket.handshake.address]++;
+	
+	printRealClients();
 
     return client;
 }
 
 function removeClient(client)
 {
+	if(serverData.addressConnects[client.socket.handshake.address])
+	{
+		serverData.addressConnects[client.socket.handshake.address]--;
+	}
+	
     serverData.clients.splice(serverData.clients.indexOf(client));
     serverData.projectorClients.splice(serverData.projectorClients.indexOf(client));
     serverData.cameraClients.splice(serverData.cameraClients.indexOf(client));
