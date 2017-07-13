@@ -243,10 +243,10 @@ process.stdin.on("keypress", function (char, key) {
         if (key.name === 't') {
             console.log("taking images...");
             takeImages("black_", false);
-            setTimeout(function ()
+            /*setTimeout(function ()
             {
                 takeImages("patterned_", true);
-            }, 1000);
+            }, 1000);*/
         }
         else if (key.name === 'e') {
             process.exit();
