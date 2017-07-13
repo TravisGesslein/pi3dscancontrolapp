@@ -3,6 +3,9 @@
 	"imageDir": "images",
 	"photoOptions": {
 		"width": 1920,
-		"height": 1080
+		"height": 1080,
+		"exposure": "off",
+		"awb": "flash"
+		
 	}
 }

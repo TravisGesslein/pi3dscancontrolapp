@@ -53,15 +53,27 @@ function takeImage(data, callback) {
     /*callback(imageFolderName + "/test.jpg");
 	return; */
 	console.log("Debug: " + data.photoOptions.width + " " + data.photoOptions.height);
-    var camera = new raspicam({
+	
+	var options = {
         mode: "photo",
         output: imageFolderName + "/%d.jpg",
 		timeout: 1,
 		nopreview: true,
-		ex: "fireworks",
 		width: data.photoOptions.width || 640,
 		height: data.photoOptions.height || 480
-    });
+    };
+	
+	for(var opt in data.photoOptions)
+	{
+		if(data.photoOptions.hasOwnProperty(opt))
+		{
+			options[opt] = data.photoOptions[opt];
+		}
+	}
+	
+    var camera = new raspicam(options);
+	
+
 	
 	var readEvent = function(thisArg, error, filename) 
 	{
