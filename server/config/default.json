@@ -4,8 +4,10 @@
 	"photoOptions": {
 		"width": 1920,
 		"height": 1080,
-		"exposure": "off",
-		"awb": "flash"
+		"shutter": 40000,
+		"awb": "flash",
+		"imxfx": "none"
+		
 		
 	}
 }
