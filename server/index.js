@@ -22,8 +22,39 @@ var serverData = {
     projectorClients: [], //all connected clients that operate a projector
 	ledClients: [], //all connected clients that operate LED stripes
     imageSets: [], //stores information about each set of taken images (every time the user wants to take images from all cameras = '1 set').
-	addressConnects: {}
+	addressConnects: {},
+	IDPool: [],
+	maxID: 100
 };
+
+//fill idPool with some ids
+(function(){
+	for(var i=0;i<serverData.maxID;++i)
+	{
+		serverData.IDPool[i] = i;
+	}
+})();
+
+//gets an available socket ID that is used to identify an ID
+function getFreeID()
+{
+	if(serverData.IDPool.length <= 0)
+	{
+		for(var i=serverData.maxID; i < serverData.maxID + 100; ++i)
+		{
+			serverData.IDPool.push(i);
+		}
+		
+		serverData.maxID = serverData.maxID + 100;
+	}
+	
+	return serverData.IDPool.pop();
+}
+
+function releaseID(id)
+{
+	serverData.IDPool.push(id);
+}
 
 io.on("error", function (error) {
     console.log(error);
@@ -54,20 +85,29 @@ function socketAlreadyConnected(socket)
 
 function printRealClients()
 {
-	var count = 0;
-	for(var address in serverData.addressConnects)
+	var counts = {};
+	for(var type in serverData.addressConnects)
 	{
-		if(serverData.addressConnects.hasOwnProperty(address))
+		var connects = serverData.addressConnects[type];
+		for(var address in connects)
 		{
-			if(serverData.addressConnects[address] > 0)
+			if(connects.hasOwnProperty(address))
 			{
-				count++;
+				if(connects[address] > 0)
+				{
+					if(typeof counts[type] === "undefined")
+					{
+						
+						counts[type] = 0;
+					}
+					counts[type]++;
+					
+				}
 			}
 		}
+		
+		console.log("real clients of type " + type + ": " + counts[type]);
 	}
-	
-	console.log("real clients connected: " + count);
-	
 }
 
 
@@ -79,7 +119,8 @@ function handleNewClient(socket)
         socket: socket,
         type: type,
         requestedImages: 0,
-        receivedImages: 0
+        receivedImages: 0,
+		id: getFreeID()
     };
 	
 	console.log("Incoming client connection: " + socket.handshake.address );
@@ -115,12 +156,16 @@ function handleNewClient(socket)
         console.log("client sent exception: " + data.toString());
     });
 	
-	if(!serverData.addressConnects[client.socket.handshake.address])
+	if(!serverData.addressConnects[client.type])
 	{
-		serverData.addressConnects[client.socket.handshake.address] = 0;
+		serverData.addressConnects[client.type] = {}
+	}
+	if(!serverData.addressConnects[client.type][client.socket.handshake.address])
+	{
+		serverData.addressConnects[client.type][client.socket.handshake.address] = 0;
 	}
 	
-	serverData.addressConnects[client.socket.handshake.address]++;
+	serverData.addressConnects[client.type][client.socket.handshake.address]++;
 	
 	printRealClients();
 
@@ -129,9 +174,9 @@ function handleNewClient(socket)
 
 function removeClient(client)
 {
-	if(serverData.addressConnects[client.socket.handshake.address])
+	if(serverData.addressConnects[client.type][client.socket.handshake.address])
 	{
-		serverData.addressConnects[client.socket.handshake.address]--;
+		serverData.addressConnects[client.type][client.socket.handshake.address]--;
 	}
 	
     serverData.clients.splice(serverData.clients.indexOf(client));
@@ -141,14 +186,23 @@ function removeClient(client)
 
 function processReceivedImage(image, imageSet, client)
 {
-    var filename = serverData.clients.indexOf(client) + ".jpg"; //filenames are just numbers corresponding to the places of the clients in our clients array
+    var filename = client.id + ".jpg"; //filenames are just numbers corresponding to the places of the clients in our clients array
     var path = imageDirectoryName + "/" + imageSet.directoryName + "/" + filename;
     imageSet.imagePaths.push(path);
     imageSet.imagesLeft--;
+	imageSet.missingIDs.splice(imageSet.missingIDs.indexOf(client.id),1);
     client.receivedImages++;
     fs.writeFile(path, image);
 
     console.log("Received image for image set " + imageSet.roundIndex + ". " + imageSet.imagesLeft + " left...");
+	if(imageSet.imagesLeft < 5)
+	{
+		console.log("Still missing images of client IDs: ");
+		for(var i=0;i<imageSet.missingIDs.length;++i)
+		{
+			console.log(imageSet.missingIDs[i]);
+		}
+	}
 }
 
 //takes images from all clients and stores them in the images folder
@@ -159,6 +213,7 @@ function takeImages(directoryNamePrefix, showBeamerPattern)
     var round = { //one 'round' of taken images
         imagesLeft: clients.length, //number of images that have yet to be received from clients
         imagePaths: [],
+		missingIDs: [],
 		roundIndex: -1,
         time: new Date(), //server time when the images were taken
         directoryName: null //computed later
@@ -192,6 +247,7 @@ function takeImages(directoryNamePrefix, showBeamerPattern)
         for (var i = 0; i < serverData.cameraClients.length; ++i) {
             serverData.cameraClients[i].socket.emit(common.EVENT_TYPES.TAKE_IMAGE, cameraClientEventData);
             serverData.cameraClients[i].requestedImages++;
+			round.missingIDs.push(serverData.cameraClients[i]);
         }
     });
 }
@@ -257,28 +313,38 @@ function resetBeamerPattern()
     }
 }
 
-console.log("Press T to tell all connected PI-cams to take images and store them on the server.");
-console.log("Press E to shut down server.");
-console.log("Press U to update console (doesn't show new messages sometimes)");
-console.log("Press A to turn LED group A on");
-console.log("Press S to turn LED group A off");
-console.log("Press B to turn LED group B on");
-console.log("Press N to turn LED group B off");
-console.log("Press I to turn projector pattern ON");
-console.log("Press O to turn projector pattern OFF");
-console.log("Press P to cycle through different available projector patterns");
-console.log("Press K to reset pattern to the default pattern");
+function printHelp()
+{
+	console.log("T\t - \t tell all connected PI-cams to take images and store them on the server.");
+	console.log("E\t - \t shut down server.");
+	console.log("U\t - \t update console (doesn't show new messages sometimes)");
+	console.log("A\t - \t turn LED group A on");
+	console.log("S\t - \t turn LED group A off");
+	console.log("B\t - \t turn LED group B on");
+	console.log("N\t - \t turn LED group B off");
+	console.log("I\t - \t turn projector pattern ON");
+	console.log("O\t - \t turn projector pattern OFF");
+	console.log("P\t - \t cycle through different available projector patterns");
+	console.log("K\t - \t reset pattern to the default pattern");
+	console.log("H\t - \t print help again");
+	
+}
+
+printHelp();
+
 
 
 process.stdin.on("keypress", function (char, key) {
     if (key) {
         if (key.name === 't') {
             console.log("taking images...");
-            takeImages("black_", false);
-            /*setTimeout(function ()
-            {
-                takeImages("patterned_", true);
-            }, 1000);*/
+            setTimeout(function(){ 
+				takeImages("black_", false);
+				setTimeout(function ()
+				{
+					takeImages("patterned_", true);
+				}, 2000);
+			}, 10000);
         }
         else if (key.name === 'e') {
             process.exit();
@@ -311,6 +377,10 @@ process.stdin.on("keypress", function (char, key) {
 		else if(key.name === 'k')
 		{
 			resetBeamerPattern();
+		}
+		else if(key.name === 'h')
+		{
+			printHelp();
 		}
 		
     }

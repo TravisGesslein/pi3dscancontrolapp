@@ -1,13 +1,15 @@
 {
 	"port": 1337,
 	"imageDir": "images",
+	"imageTimeout": 10,
 	"photoOptions": {
 		"width": 1920,
 		"height": 1080,
-		"shutter": 40000,
-		"awb": "flash",
-		"imxfx": "none"
-		
+		"shutter": 18000,
+		"awb": "sun",
+		"imxfx": "none",
+		"ex": "off",
+		"q": 100
 		
 	}
 }
