@@ -229,6 +229,34 @@ function ledBOff()
 }
 //startup
 
+function beamerPatternOn()
+{
+	for (var i = 0; i < serverData.projectorClients.length; ++i) {
+		serverData.projectorClients[i].socket.emit(common.EVENT_TYPES.BEAMER_SHOW_PATTERN, {});
+    }
+}
+
+function beamerPatternOff()
+{
+	for (var i = 0; i < serverData.projectorClients.length; ++i) {
+		serverData.projectorClients[i].socket.emit(common.EVENT_TYPES.BEAMER_HIDE_PATTERN, {});
+    }
+}
+
+function cycleBeamerPattern()
+{
+	for (var i = 0; i < serverData.projectorClients.length; ++i) {
+		serverData.projectorClients[i].socket.emit(common.EVENT_TYPES.BEAMER_NEXT_PATTERN, {});
+    }
+}
+
+function resetBeamerPattern()
+{
+	for (var i = 0; i < serverData.projectorClients.length; ++i) {
+		serverData.projectorClients[i].socket.emit(common.EVENT_TYPES.BEAMER_RESET_PATTERN, {});
+    }
+}
+
 console.log("Press T to tell all connected PI-cams to take images and store them on the server.");
 console.log("Press E to shut down server.");
 console.log("Press U to update console (doesn't show new messages sometimes)");
@@ -236,6 +264,10 @@ console.log("Press A to turn LED group A on");
 console.log("Press S to turn LED group A off");
 console.log("Press B to turn LED group B on");
 console.log("Press N to turn LED group B off");
+console.log("Press I to turn projector pattern ON");
+console.log("Press O to turn projector pattern OFF");
+console.log("Press P to cycle through different available projector patterns");
+console.log("Press K to reset pattern to the default pattern");
 
 
 process.stdin.on("keypress", function (char, key) {
@@ -264,6 +296,21 @@ process.stdin.on("keypress", function (char, key) {
 		} else if(key.name === 'n')
 		{
 			ledBOff();
+		} else if(key.name === 'i')
+		{
+			beamerPatternOn();
+		}
+		else if (key.name === 'o')
+		{
+			beamerPatternOff();
+		}
+		else if (key.name === 'p')
+		{
+			cycleBeamerPattern();
+		}
+		else if(key.name === 'k')
+		{
+			resetBeamerPattern();
 		}
 		
     }

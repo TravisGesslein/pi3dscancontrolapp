@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "window": {
-	"toolbar": false
+    "toolbar": false
   },
   "dependencies": {
     "common": "file:..\\common",
