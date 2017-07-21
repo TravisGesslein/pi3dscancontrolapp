@@ -23,15 +23,20 @@ io.on("connect", function (socket,a,b)
 
 //server tells me to take image!
 io.on(common.EVENT_TYPES.TAKE_IMAGE, function (data) {
-    console.log("Received server command: take image");
-    takeImage(data, function (imageFilename) {
-		console.log("preparing SEND_IMAGE event");
-        var image = fs.readFileSync(imageFilename);
-        var str = image.toString('base64');
-        io.emit(common.EVENT_TYPES.SEND_IMAGE, { image: str, setIndex: data.setIndex }); //server sends us a set index so it knows which set of images the currently set image belongs to. we send it back.
-		console.log("sending response to server for image set " + data.setIndex);
-	});
-
+    var timeout =  data ? data.timeout || 0 : 0;
+	
+	console.log("Received server command: take image. using timeout of " + timeout);
+	
+	
+	setTimeout(function(){
+		takeImage(data, function (imageFilename) {
+			console.log("preparing SEND_IMAGE event");
+			var image = fs.readFileSync(imageFilename);
+			var str = image.toString('base64');
+			io.emit(common.EVENT_TYPES.SEND_IMAGE, { image: str, setIndex: data.setIndex }); //server sends us a set index so it knows which set of images the currently set image belongs to. we send it back.
+			console.log("sending response to server for image set " + data.setIndex);
+		});
+	}, timeout);
 	
 });
 

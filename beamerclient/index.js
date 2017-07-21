@@ -30,13 +30,21 @@ io.on(common.EVENT_TYPES.BEAMER_RESET_PATTERN, function (data) {
 
 //server tells me to show pattern!
 io.on(common.EVENT_TYPES.BEAMER_SHOW_PATTERN, function (data) {
-    showPattern();
+	var timeout = data.timeout || 0;
+	
+	setTimeout(function(){
+		showPattern();
+	},timeout);
 });
 
 //server tells me to hide pattern!
 io.on(common.EVENT_TYPES.BEAMER_HIDE_PATTERN, function (data)
 {
-    hidePattern();
+	var timeout = data.timeout || 0;
+	
+	setTimeout(function(){
+		hidePattern();
+	});
 });
 
 var currentWindow = null;

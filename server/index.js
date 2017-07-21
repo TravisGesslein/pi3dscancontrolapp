@@ -35,6 +35,14 @@ var serverData = {
 	}
 })();
 
+function printProjectorIPs()
+{
+	for(var i=0;i<serverData.projectorClients.length;++i)
+	{
+		console.log(serverData.projectorClients[i].socket.handshake.address);
+	}
+}
+
 //gets an available socket ID that is used to identify an ID
 function getFreeID()
 {
@@ -206,7 +214,7 @@ function processReceivedImage(image, imageSet, client)
 }
 
 //takes images from all clients and stores them in the images folder
-function takeImages(directoryNamePrefix, showBeamerPattern)
+function takeImages(directoryNamePrefix, showBeamerPattern, timeout)
 {
     var clients = serverData.cameraClients;
 
@@ -221,7 +229,7 @@ function takeImages(directoryNamePrefix, showBeamerPattern)
 
 	
     round.directoryName =  round.time.getDate() + "-" + (round.time.getMonth()+1) + "-" + round.time.getFullYear() + " " + round.time.getHours() + " " + round.time.getMinutes() + " " + round.time.getSeconds() + " " + round.time.getMilliseconds() + directoryNamePrefix;
-
+	
     //start the image taking process after folder is created (via callback)
     fs.mkdir(imageDirectoryName + "/" + round.directoryName, function ()
     {
@@ -232,22 +240,23 @@ function takeImages(directoryNamePrefix, showBeamerPattern)
         //(for example, if two sets of images are taken immediately one after the other, but some time is needed for network transfer)
         var cameraClientEventData = {
             setIndex: round.roundIndex, //index of the image set that the taken image corresponds to
-			photoOptions: photoOptions
+			photoOptions: photoOptions,
+			timeout: timeout
         }
-
+		
         for (var i = 0; i < serverData.projectorClients.length; ++i) {
             if (showBeamerPattern) {
-                serverData.projectorClients[i].socket.emit(common.EVENT_TYPES.BEAMER_SHOW_PATTERN, {});
+                serverData.projectorClients[i].socket.emit(common.EVENT_TYPES.BEAMER_SHOW_PATTERN, {timeout: timeout/2});
             }
             else {
-                serverData.projectorClients[i].socket.emit(common.EVENT_TYPES.BEAMER_HIDE_PATTERN, {});
+                serverData.projectorClients[i].socket.emit(common.EVENT_TYPES.BEAMER_HIDE_PATTERN, {timeout: timeout/2});
             }
         }
 
         for (var i = 0; i < serverData.cameraClients.length; ++i) {
             serverData.cameraClients[i].socket.emit(common.EVENT_TYPES.TAKE_IMAGE, cameraClientEventData);
             serverData.cameraClients[i].requestedImages++;
-			round.missingIDs.push(serverData.cameraClients[i]);
+			round.missingIDs.push(serverData.cameraClients[i].id);
         }
     });
 }
@@ -332,19 +341,22 @@ function printHelp()
 
 printHelp();
 
-
+function printIDs()
+{
+	for(var i=0;i<serverData.clients.length;++i)
+	{
+		console.log(serverData.clients[i].socket.handshake.address + ": " + serverData.clients[i].id);
+	}
+}
 
 process.stdin.on("keypress", function (char, key) {
     if (key) {
         if (key.name === 't') {
             console.log("taking images...");
             setTimeout(function(){ 
-				takeImages("black_", false);
-				setTimeout(function ()
-				{
-					takeImages("patterned_", true);
-				}, 2000);
-			}, 10000);
+				takeImages("black_", false, 1000);
+				takeImages("patterned_", true, 4000);
+			}, 2000);
         }
         else if (key.name === 'e') {
             process.exit();
@@ -382,9 +394,29 @@ process.stdin.on("keypress", function (char, key) {
 		{
 			printHelp();
 		}
-		
+		else if(key.name === 'q')
+		{
+			printProjectorIPs();
+		}
+		else if(key.name === 'w')
+		{
+			printIDs();
+		}
+		/*else if(key.name === 'z')
+		{
+			debug();
+		}*/
     }
 });
+
+function debug()
+{
+	setTimeout(function(){ 
+		takeImages("debugtest1_", false, 0);
+		takeImages("debugtest2_", false, 0);
+		takeImages("debugtest3", false, 0);
+	}, 0);
+}
 
 process.stdin.setRawMode(true);
 process.stdin.resume();
