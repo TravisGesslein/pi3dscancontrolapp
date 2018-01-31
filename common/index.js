@@ -1,0 +1,8 @@
+exports.EVENT_TYPES = {
+    TAKE_IMAGE: 0,
+    SEND_IMAGE: 1,
+    ERROR: 2,
+    BEAMER_SHOW_PATTERN: 3,
+    BEAMER_HIDE_PATTERN: 4,
+	GIT_PULL: 5
+};
