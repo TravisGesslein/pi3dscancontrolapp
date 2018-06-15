@@ -200,7 +200,7 @@ function processReceivedImage(image, imageSet, client)
     imageSet.imagesLeft--;
 	imageSet.missingIDs.splice(imageSet.missingIDs.indexOf(client.id),1);
     client.receivedImages++;
-    fs.writeFile(path, image);
+    fs.writeFileSync(path, image);
 
     console.log("Received image for image set " + imageSet.roundIndex + ". " + imageSet.imagesLeft + " left...");
 	if(imageSet.imagesLeft < 5)
